@@ -1,0 +1,4 @@
+interface:
+  display_name: "Numerical Research Kit"
+  short_description: "Compare numerical error and declared cost"
+  default_prompt: "Use $compare-numerical-methods to compare my baseline and candidate predictions against a reference."

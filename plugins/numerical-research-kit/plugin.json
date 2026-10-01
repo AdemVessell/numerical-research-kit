@@ -1,0 +1,41 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "numerical-research-kit",
+  "version": "0.2.0",
+  "description": "Local numerical error and declared-cost comparisons with checkable saved records.",
+  "author": {
+    "name": "Adem Vessell",
+    "url": "https://github.com/AdemVessell"
+  },
+  "homepage": "https://github.com/AdemVessell/numerical-research-kit",
+  "repository": "https://github.com/AdemVessell/numerical-research-kit",
+  "license": "MIT",
+  "keywords": [
+    "numerical-analysis",
+    "research",
+    "comparison"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Numerical Research Kit",
+        "shortDescription": "Compare error and cost",
+        "longDescription": "Compare baseline and candidate numerical predictions against reference values. Inspect mean squared error, declared costs and fixed-correction bounds, then freeze and verify saved records. Includes deterministic Python tools, strict input checks and a synthetic solver example. Requires Python 3.9 or later and file execution. Costs and references are supplied by the user; no automatic cost measurement, statistical confidence or scientific certification is provided.",
+        "developerName": "Adem Vessell",
+        "category": "Developer Tools",
+        "capabilities": [],
+        "websiteURL": "https://github.com/AdemVessell/numerical-research-kit",
+        "supportURL": "https://github.com/AdemVessell/numerical-research-kit/issues",
+        "privacyPolicyURL": "https://github.com/AdemVessell/numerical-research-kit/blob/main/plugins/numerical-research-kit/PRIVACY.md",
+        "defaultPrompt": [
+          "Compare my baseline and candidate predictions against these reference values.",
+          "Check whether this fixed correction can justify its declared computational cost.",
+          "Verify this saved numerical comparison and show every failed case."
+        ],
+        "brandColor": "#164E63",
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/icon.svg"
+      }
+    }
+  }
+}

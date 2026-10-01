@@ -1,0 +1,20 @@
+{
+  "name": "numerical-research-kit-marketplace",
+  "interface": {
+    "displayName": "Numerical Research Kit"
+  },
+  "plugins": [
+    {
+      "name": "numerical-research-kit",
+      "source": {
+        "source": "local",
+        "path": "./plugins/numerical-research-kit"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
