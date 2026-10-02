@@ -3,7 +3,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from .core import compare_vectors, correction_bound, freeze, score, verify_report
+from .core import bind_references, compare_vectors, correction_bound, freeze, score, templates, verify_report
 
 
 def pairs(items):
@@ -31,6 +31,13 @@ def write(path, value):
         f.write(data)
 
 
+def case_spec(text):
+    ident, sep, size = text.rpartition(":")
+    if not sep or not size.isdigit():
+        raise ValueError("--case must be ID:SIZE with a positive integer size: " + text)
+    return ident, int(size)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Portable numerical comparison records; declared costs, no official scoring.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -41,7 +48,11 @@ def main(argv=None):
     bo.add_argument("--delta-rms", type=float, required=True)
     bo.add_argument("--cost-multiplier-ratio", type=float, default=1.0)
     bo.add_argument("--out", required=True)
+    it = sub.add_parser("init", help="Write fill-in protocol, predictions and references templates")
+    it.add_argument("--dir", required=True);it.add_argument("--case", action="append", required=True, metavar="ID:SIZE")
     fr = sub.add_parser("freeze");fr.add_argument("--protocol", required=True);fr.add_argument("--predictions", required=True);fr.add_argument("--out", required=True)
+    bi = sub.add_parser("bind", help="Check references against a frozen record and bind them to its hash")
+    bi.add_argument("--frozen", required=True);bi.add_argument("--references", required=True);bi.add_argument("--out", required=True)
     sc = sub.add_parser("score");sc.add_argument("--frozen", required=True);sc.add_argument("--references", required=True);sc.add_argument("--out", required=True)
     ve = sub.add_parser("verify");ve.add_argument("--frozen", required=True);ve.add_argument("--references", required=True);ve.add_argument("--report", required=True)
     args = parser.parse_args(argv)
@@ -55,6 +66,20 @@ def main(argv=None):
         if args.command == "bound":
             result = correction_bound(args.baseline_mse, args.delta_rms, args.cost_multiplier_ratio)
             write(args.out, result);print(json.dumps(result, allow_nan=False));return 0
+        if args.command == "init":
+            folder = Path(args.dir);names = ("protocol.json", "predictions.json", "references.json")
+            files = dict(zip(names, templates([case_spec(c) for c in args.case])))
+            existing = [n for n in names if (folder/n).exists()]
+            if existing:
+                raise ValueError("refusing to overwrite: " + ", ".join(existing))
+            folder.mkdir(parents=True, exist_ok=True)
+            for name, value in files.items():
+                write(folder/name, value)
+            print(json.dumps({"status": "TEMPLATES", "dir": str(folder), "files": list(names),
+                              "next": "fill every TODO: field and the values, then freeze"}));return 0
+        if args.command == "bind":
+            result = bind_references(read(args.frozen), read(args.references));write(args.out, result)
+            print(json.dumps({"status": "BOUND", "frozen_sha256": result["frozen_sha256"], "cases": len(result["cases"])}));return 0
         if args.command == "freeze":
             result = freeze(read(args.protocol), read(args.predictions));write(args.out, result)
             print(json.dumps({"status": "FROZEN", "sha256": result["sha256"]}));return 0

@@ -139,23 +139,79 @@ def validate_inputs(protocol, predictions):
                 require(number(item["cost"], "cost") > 0, "known costs must be positive")
 
 
+PLACEHOLDER = "TODO:"
+
+
+def placeholders(value, path):
+    if isinstance(value, str):
+        return [path] if value.startswith(PLACEHOLDER) else []
+    items = value.items() if isinstance(value, dict) else enumerate(value) if isinstance(value, list) else []
+    return [hit for key, item in items for hit in placeholders(item, path + "." + str(key))]
+
+
+def templates(cases):
+    """Fill-in protocol, predictions and unbound references for (id, size) pairs.
+
+    Unfilled templates cannot be frozen: protocol text starts with TODO: and
+    prediction values are null.
+    """
+    require(isinstance(cases, list) and len(cases) > 0, "at least one case is required")
+    for ident, size in cases:
+        require(isinstance(ident, str) and ident.strip(), "case id is required")
+        require(type(size) is int and size > 0, "case size must be a positive integer")
+    require(len({ident for ident, _ in cases}) == len(cases), "duplicate case id")
+    protocol = {"schema": 1, "name": PLACEHOLDER + " short name",
+                "cases": [{"id": ident, "size": size, "parameters": {}} for ident, size in cases],
+                "aggregation": "equal_case_mean_mse",
+                "reference_visibility": PLACEHOLDER + " reference source and who saw it before freeze",
+                "claim_boundary": PLACEHOLDER + " what this comparison does not show",
+                "cost_unit": PLACEHOLDER + " unit, e.g. RHS evaluations",
+                "cost_basis": PLACEHOLDER + " how each cost is counted, including setup and readout",
+                "provenance": {"source_sha256": PLACEHOLDER + " hash of the code that produced the predictions",
+                               "data": PLACEHOLDER + " inputs and their exposure"},
+                "gates": {"max_case_mse_ratio": None, "max_mean_mse_ratio": None, "max_cost_ratio": None}}
+    arm = {"values": None, "cost": None, "failure": None}
+    predictions = {"cases": [{"id": ident, "baseline": dict(arm), "candidate": dict(arm)} for ident, _ in cases]}
+    references = {"cases": [{"id": ident, "values": None} for ident, _ in cases]}
+    return protocol, predictions, references
+
+
 def freeze(protocol, predictions):
     """Bind an explicit protocol and predictions; caller supplies provenance."""
     validate_inputs(protocol, predictions)
+    left = placeholders(protocol, "protocol")
+    require(not left, "unfilled template field: " + ", ".join(left))
     return sealed({"kind": "prediction_freeze", "version": VERSION,
                    "protocol": protocol, "predictions": predictions})
 
 
-def score(frozen, references):
+def frozen_protocol(frozen):
     payload = unseal(frozen)
     require(payload.get("kind") == "prediction_freeze" and payload.get("version") == VERSION, "unsupported freeze version")
-    p, predictions = payload["protocol"], payload["predictions"]
-    validate_inputs(p, predictions)
-    require(isinstance(references, dict) and references.get("frozen_sha256") == frozen["sha256"], "reference binding mismatch")
-    require(case_list(references.get("cases"), "references") == [x["id"] for x in p["cases"]], "reference case order mismatch")
+    validate_inputs(payload["protocol"], payload["predictions"])
+    return payload["protocol"], payload["predictions"]
+
+
+def check_references(protocol, references):
+    require(case_list(references.get("cases"), "references") == [x["id"] for x in protocol["cases"]], "reference case order mismatch")
     # Validate ALL references before calculating metrics.
-    for spec, ref in zip(p["cases"], references["cases"]):
+    for spec, ref in zip(protocol["cases"], references["cases"]):
         require(len(vector(ref.get("values"), "reference")) == spec["size"], "reference shape mismatch")
+
+
+def bind_references(frozen, references):
+    """Return references bound to this frozen record, after the checks score applies."""
+    p, _ = frozen_protocol(frozen)
+    require(isinstance(references, dict), "references must be an object")
+    require(references.get("frozen_sha256") in (None, frozen["sha256"]), "references are already bound to a different frozen record")
+    check_references(p, references)
+    return json.loads(canonical({**references, "frozen_sha256": frozen["sha256"]}))
+
+
+def score(frozen, references):
+    p, predictions = frozen_protocol(frozen)
+    require(isinstance(references, dict) and references.get("frozen_sha256") == frozen["sha256"], "reference binding mismatch")
+    check_references(p, references)
     rows = []
     for pred, ref in zip(predictions["cases"], references["cases"]):
         a, b = pred["baseline"], pred["candidate"]

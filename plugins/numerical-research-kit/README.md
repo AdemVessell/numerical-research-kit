@@ -58,7 +58,8 @@ pay for twice the cost under the supplied linear error-times-cost metric.
 
 For multiple cases and acceptance criteria, follow the
 [input contract](skills/compare-numerical-methods/references/FORMAT.md).
-Commands `freeze`, `score`, and `verify` bind predictions, references and reports.
+Commands `init`, `freeze`, `bind`, `score`, and `verify` template, seal and bind predictions,
+references and reports.
 Output files must be new. Inputs are UTF-8 JSON, at most 16 MiB per file.
 
 ## Reusable API
@@ -67,7 +68,7 @@ The `researchkit` module is in `skills/compare-numerical-methods/scripts`.
 From that directory, Python code can import:
 
 ```python
-from researchkit import compare_vectors, correction_bound, freeze, score, verify_report
+from researchkit import bind_references, compare_vectors, correction_bound, freeze, score, templates, verify_report
 assert compare_vectors([1, 1], [0.5, 0.5], [0, 0])["mse_ratio"] == 0.25
 ```
 

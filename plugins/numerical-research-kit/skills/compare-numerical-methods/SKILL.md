@@ -29,11 +29,15 @@ workspace, outside the installed plugin. Paths below are examples.
 - **Declared acceptance criteria:** read [references/FORMAT.md](references/FORMAT.md).
   Specify ordered cases, reference exposure, baseline, candidate, cost units/basis,
   failures and gates. Then:
-  1. `python3 -B scripts/cli.py freeze --protocol protocol.json --predictions predictions.json --out frozen.json`
-  2. Bind `references.json` to the frozen record: set its `frozen_sha256` to the
-     `sha256` value that `freeze` prints (the top-level `sha256` in `frozen.json`).
-  3. `python3 -B scripts/cli.py score --frozen frozen.json --references references.json --out report.json`
-  4. `python3 -B scripts/cli.py verify --frozen frozen.json --references references.json --report report.json`
+  1. Optional: `python3 -B scripts/cli.py init --dir run --case case_a:2 --case case_b:3`
+     writes fill-in `protocol.json`, `predictions.json` and `references.json`.
+     Replace every `TODO:` field and null value; `freeze` refuses unfilled templates.
+  2. `python3 -B scripts/cli.py freeze --protocol protocol.json --predictions predictions.json --out frozen.json`
+  3. Fill `references.json` (`cases` only), then
+     `python3 -B scripts/cli.py bind --frozen frozen.json --references references.json --out bound_references.json`.
+     It applies the same reference checks as `score` and adds the frozen hash.
+  4. `python3 -B scripts/cli.py score --frozen frozen.json --references bound_references.json --out report.json`
+  5. `python3 -B scripts/cli.py verify --frozen frozen.json --references bound_references.json --report report.json`
 - **First-use example:** run `python3 -B scripts/examples/ode.py --out /absolute/path/to/new-demo`.
   Expect `intended: PASS` and `wrong_sign: FAIL`. Both saved reports must verify.
   Its public analytic reference is not a blind test.

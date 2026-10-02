@@ -1,7 +1,7 @@
 import copy
 import math
 import unittest
-from researchkit.core import compare_vectors, correction_bound, freeze, score, verify_report, sealed
+from researchkit.core import bind_references, compare_vectors, correction_bound, freeze, score, templates, verify_report, sealed
 
 
 def fixture():
@@ -66,6 +66,38 @@ class CoreTests(unittest.TestCase):
                        lambda y:y["cases"].append(y["cases"][0]), lambda y:y["cases"][0].update(values=[0.])]:
             y = refs(f);mutate(y)
             with self.assertRaises(ValueError):score(f, y)
+
+    def test_bind_adds_hash_and_scores(self):
+        f = freeze(*fixture());y = {"cases": [{"id": "a", "values": [0., 0.]}]}
+        b = bind_references(f, y)
+        self.assertEqual(b, refs(f));self.assertNotIn("frozen_sha256", y)
+        self.assertEqual(score(f, b)["payload"]["verdict"], "PASS")
+        self.assertEqual(bind_references(f, b), b)
+
+    def test_bind_applies_score_guards(self):
+        f = freeze(*fixture());other = freeze(*fixture()[:1], {"cases": [{"id": "a",
+            "baseline": {"values": [2., 2.], "cost": 4, "failure": None},
+            "candidate": {"values": [1., 1.], "cost": 4, "failure": None}}]})
+        for mutate in [lambda y:y.update(frozen_sha256=other["sha256"]), lambda y:y["cases"][0].update(id="b"),
+                       lambda y:y["cases"].append(y["cases"][0]), lambda y:y["cases"][0].update(values=[0.]),
+                       lambda y:y["cases"][0].update(values=None), lambda y:y["cases"][0].update(values=[0., math.nan])]:
+            y = {"cases": [{"id": "a", "values": [0., 0.]}]};mutate(y)
+            with self.assertRaises(ValueError):bind_references(f, y)
+        f["payload"]["predictions"]["cases"][0]["candidate"]["values"][0] = 2
+        with self.assertRaises(ValueError):bind_references(f, {"cases": [{"id": "a", "values": [0., 0.]}]})
+
+    def test_templates_refuse_freeze_until_filled(self):
+        p, x, y = templates([("a", 2), ("b", 1)])
+        self.assertEqual([c["id"] for c in y["cases"]], ["a", "b"])
+        with self.assertRaises(ValueError):freeze(p, x)
+        filled, _ = fixture();filled["cases"] = p["cases"]
+        x["cases"][0]["baseline"].update(values=[1., 1.]);x["cases"][0]["candidate"].update(values=[.5, .5])
+        x["cases"][1]["baseline"].update(values=[1.]);x["cases"][1]["candidate"].update(values=[.5])
+        freeze(filled, x)
+        filled["provenance"]["note"] = "TODO: say where this came from"
+        with self.assertRaisesRegex(ValueError, "protocol.provenance.note"):freeze(filled, x)
+        for bad in ([], [("a", 0)], [("a", 1), ("a", 2)], [(" ", 1)]):
+            with self.assertRaises(ValueError):templates(bad)
 
     def test_protocol_shape_and_identity_guards(self):
         for mutate in [lambda p,x:p["cases"].append(p["cases"][0]), lambda p,x:x["cases"][0].update(id="b"),

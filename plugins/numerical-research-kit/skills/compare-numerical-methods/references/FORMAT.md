@@ -39,6 +39,15 @@ Reference record:
  "cases": [{"id": "case_a", "values": [0,0]}]}
 ```
 
+`bind` writes this record for you: give it references with only `cases` (or
+already bound to the same frozen record) and it checks case order, lengths and
+finite values against the frozen protocol before adding `frozen_sha256`. It
+refuses references bound to a different frozen record.
+
+`init --dir DIR --case ID:SIZE ...` writes templates for all three files with
+gates disabled. `freeze` rejects any protocol string that still starts with
+`TODO:`, and template predictions are null until filled.
+
 Ordering and lengths must match exactly. There is no truncating zip or numeric
 broadcasting. A failed arm uses `failure: "description"`, `values: null` and
 known positive cost or null. Any declared failure makes the overall verdict
