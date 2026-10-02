@@ -12,7 +12,7 @@
       "name": "numerical-research-kit",
       "source": "./plugins/numerical-research-kit",
       "description": "Local numerical error and declared-cost comparisons with checkable saved records.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "category": "development"
     }
   ]
