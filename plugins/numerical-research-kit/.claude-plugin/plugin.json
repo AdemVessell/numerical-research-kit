@@ -1,0 +1,17 @@
+{
+  "name": "numerical-research-kit",
+  "version": "0.2.0",
+  "description": "Local numerical error and declared-cost comparisons with checkable saved records.",
+  "author": {
+    "name": "Adem Vessell",
+    "url": "https://github.com/AdemVessell"
+  },
+  "homepage": "https://github.com/AdemVessell/numerical-research-kit",
+  "repository": "https://github.com/AdemVessell/numerical-research-kit",
+  "license": "MIT",
+  "keywords": [
+    "numerical-analysis",
+    "research",
+    "comparison"
+  ]
+}
