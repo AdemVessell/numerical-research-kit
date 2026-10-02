@@ -1,5 +1,13 @@
 # Changes
 
+## 0.3.0 — init and bind commands
+
+- `init` writes fill-in protocol, predictions and references templates.
+- `bind` checks references against a frozen record and adds its hash, replacing
+  the manual copy step. It refuses references bound to a different record.
+- `freeze` rejects protocols that still contain `TODO:` template placeholders.
+- Record version stays 0.2.0; existing records verify unchanged.
+
 ## 0.2.1 — documentation fix
 
 - Claude Code plugin and marketplace manifests alongside the Codex ones.

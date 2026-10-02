@@ -41,5 +41,27 @@ class CliTests(unittest.TestCase):
             r=run("score","--frozen",p/"bad.json","--references",p/"badrefs.json","--out",p/"fail.json")
             self.assertEqual(r.returncode,1,r.stderr)
 
+    def test_init_bind_workflow(self):
+        with tempfile.TemporaryDirectory() as td:
+            p=Path(td);d=p/"run"
+            def run(*args):
+                return subprocess.run([sys.executable,"-B",str(ROOT/"cli.py"),*map(str,args)],cwd=td,capture_output=True,text=True)
+            r=run("init","--dir",d,"--case","a:2");self.assertEqual(r.returncode,0,r.stderr)
+            self.assertEqual(run("init","--dir",d,"--case","a:2").returncode,2)
+            self.assertEqual(run("init","--dir",p/"x","--case","a:two").returncode,2)
+            self.assertEqual(run("freeze","--protocol",d/"protocol.json","--predictions",d/"predictions.json","--out",d/"frozen.json").returncode,2)
+            self.assertFalse((d/"frozen.json").exists())
+            protocol,pred=fixture();(d/"protocol.json").unlink();(d/"predictions.json").unlink()
+            write(d/"protocol.json",protocol);write(d/"predictions.json",pred)
+            r=run("freeze","--protocol",d/"protocol.json","--predictions",d/"predictions.json","--out",d/"frozen.json")
+            self.assertEqual(r.returncode,0,r.stderr);sha=json.loads(r.stdout)["sha256"]
+            self.assertEqual(run("bind","--frozen",d/"frozen.json","--references",d/"references.json","--out",d/"bound.json").returncode,2)
+            refs_in=read(d/"references.json");refs_in["cases"][0]["values"]=[0.,0.];(d/"references.json").unlink();write(d/"references.json",refs_in)
+            r=run("bind","--frozen",d/"frozen.json","--references",d/"references.json","--out",d/"bound.json")
+            self.assertEqual(r.returncode,0,r.stderr);self.assertEqual(read(d/"bound.json")["frozen_sha256"],sha)
+            self.assertEqual(run("bind","--frozen",d/"frozen.json","--references",d/"references.json","--out",d/"bound.json").returncode,2)
+            r=run("score","--frozen",d/"frozen.json","--references",d/"bound.json","--out",d/"report.json");self.assertEqual(r.returncode,0,r.stderr)
+            r=run("verify","--frozen",d/"frozen.json","--references",d/"bound.json","--report",d/"report.json");self.assertEqual(r.returncode,0,r.stderr)
+
 
 if __name__ == "__main__":unittest.main()
