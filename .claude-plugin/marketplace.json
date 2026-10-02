@@ -1,0 +1,19 @@
+{
+  "name": "numerical-research-kit-marketplace",
+  "owner": {
+    "name": "Adem Vessell",
+    "url": "https://github.com/AdemVessell"
+  },
+  "metadata": {
+    "description": "Claude Code marketplace for the Numerical Research Kit plugin."
+  },
+  "plugins": [
+    {
+      "name": "numerical-research-kit",
+      "source": "./plugins/numerical-research-kit",
+      "description": "Local numerical error and declared-cost comparisons with checkable saved records.",
+      "version": "0.2.0",
+      "category": "development"
+    }
+  ]
+}
