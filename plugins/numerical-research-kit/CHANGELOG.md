@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.3.0 — init and bind commands
 
 - `init` writes fill-in protocol, predictions and references templates.
 - `bind` checks references against a frozen record and adds its hash, replacing
