@@ -5,7 +5,7 @@ Use a small synthetic input, the package version, Python version, exact command,
 expected result and actual result. Do not include personal data, credentials or
 unpublished research. There is no guaranteed response time or paid support SLA.
 
-Version 0.2.0 uses record version 0.2.0. Records from earlier development versions
+Version 0.2.1 uses record version 0.2.0. Records from earlier development versions
 are not accepted by this release. Keep the original version to verify old records;
 never relabel an old record as a new result. Changes to inputs, code or gates
 should produce a new comparison directory.

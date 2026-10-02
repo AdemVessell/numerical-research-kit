@@ -4,7 +4,7 @@ A local skill and Python toolkit for comparing numerical approximations. It turn
 supplied baseline, candidate and reference values into checkable error measurements,
 declared-cost comparisons and saved reports.
 
-**Version 0.2.0 · Python 3.9+ · standard library only**
+**Version 0.2.1 · Python 3.9+ · standard library only**
 
 Use it to evaluate a solver change, inspect whether a correction is large enough
 to justify its cost, or preserve the inputs behind a reported result. It handles

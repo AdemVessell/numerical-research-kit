@@ -1,5 +1,12 @@
 # Changes
 
+## 0.2.1 — documentation fix
+
+- Claude Code plugin and marketplace manifests alongside the Codex ones.
+- Clarify that `references.json` binds to the `sha256` printed by `freeze`
+  (the top-level `sha256` in `frozen.json`).
+- Record version stays 0.2.0; existing records verify unchanged.
+
 ## 0.2.0 — initial public package
 
 - Portable plugin manifest, repository marketplace and one callable Codex skill.

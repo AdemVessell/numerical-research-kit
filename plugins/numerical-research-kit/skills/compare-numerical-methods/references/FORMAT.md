@@ -35,7 +35,7 @@ Predictions:
 Reference record:
 
 ```json
-{"frozen_sha256": "copy the hash from frozen.json",
+{"frozen_sha256": "copy the top-level sha256 from frozen.json",
  "cases": [{"id": "case_a", "values": [0,0]}]}
 ```
 

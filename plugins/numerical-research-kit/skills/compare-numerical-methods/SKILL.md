@@ -30,7 +30,8 @@ workspace, outside the installed plugin. Paths below are examples.
   Specify ordered cases, reference exposure, baseline, candidate, cost units/basis,
   failures and gates. Then:
   1. `python3 -B scripts/cli.py freeze --protocol protocol.json --predictions predictions.json --out frozen.json`
-  2. Bind `references.json` to the returned `frozen_sha256`.
+  2. Bind `references.json` to the frozen record: set its `frozen_sha256` to the
+     `sha256` value that `freeze` prints (the top-level `sha256` in `frozen.json`).
   3. `python3 -B scripts/cli.py score --frozen frozen.json --references references.json --out report.json`
   4. `python3 -B scripts/cli.py verify --frozen frozen.json --references references.json --report report.json`
 - **First-use example:** run `python3 -B scripts/examples/ode.py --out /absolute/path/to/new-demo`.
