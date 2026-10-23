@@ -47,13 +47,33 @@ def unseal(record):
 
 
 def ratio(numerator, denominator):
-    return number(numerator / denominator, "computed ratio") if denominator > 0 else None
+    if denominator <= 0:
+        return None
+    answer = number(numerator / denominator, "computed ratio")
+    require(numerator <= 0 or answer != 0, "numeric underflow in ratio; rescale inputs")
+    return answer
 
 
 def average(values):
     answer = math.fsum(values) / len(values)
     require(math.isfinite(answer), "numeric overflow in average")
     return answer
+
+
+def nonnegative_average(values):
+    answer = average(values)
+    require(answer != 0 or not any(value > 0 for value in values),
+            "numeric underflow in nonnegative mean; rescale inputs")
+    return answer
+
+
+def mean_square(values, *, power=False):
+    values = list(values)
+    # Preserve the original multiplication/power operations for saved reports.
+    squares = [value**2 if power else value*value for value in values]
+    require(all(value == 0 or square != 0 for value, square in zip(values, squares)),
+            "numeric underflow in nonzero square; rescale inputs")
+    return nonnegative_average(squares)
 
 
 def compare_vectors(baseline, candidate, reference):
@@ -64,9 +84,9 @@ def compare_vectors(baseline, candidate, reference):
     try:
         e = [x-t for x, t in zip(a, y)]
         d = [z-x for x, z in zip(a, b)]
-        native = average([x*x for x in e])
-        proposed = average([(z-t)**2 for z, t in zip(b, y)])
-        energy = average([x*x for x in d])
+        native = mean_square(e)
+        proposed = mean_square((z-t for z, t in zip(b, y)), power=True)
+        energy = mean_square(d)
         cross = 2*average([x*z for x, z in zip(e, d)])
         identity_error = proposed-native-cross-energy
         scale = max(native, proposed, abs(cross), energy, 1e-300)
@@ -76,7 +96,7 @@ def compare_vectors(baseline, candidate, reference):
                 "mse_ratio": r, "cross_term": cross, "update_energy": energy,
                 "delta_rms": math.sqrt(energy), "identity_error": identity_error,
                 "extra_cost_fraction_at_break_even": number(1/r-1, "break-even fraction") if r is not None and r > 0 else None,
-                "sign_reversed_mse": average([(x-delta-t)**2 for x, delta, t in zip(a, d, y)])}
+                "sign_reversed_mse": mean_square((x-delta-t for x, delta, t in zip(a, d, y)), power=True)}
     except (OverflowError, ZeroDivisionError) as exc:
         raise ValueError("numeric range exceeded") from exc
 
@@ -228,7 +248,7 @@ def score(frozen, references):
         reasons.append("one or more declared execution failures")
         summary = None
     else:
-        a = average([r["baseline_mse"] for r in rows]);b = average([r["candidate_mse"] for r in rows])
+        a = nonnegative_average([r["baseline_mse"] for r in rows]);b = nonnegative_average([r["candidate_mse"] for r in rows])
         known_cost = all(r["cost_ratio"] is not None for r in rows)
         ca = average([r["baseline_cost"] for r in rows]) if known_cost else None
         cb = average([r["candidate_cost"] for r in rows]) if known_cost else None

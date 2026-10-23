@@ -1,5 +1,16 @@
 # Changes
 
+## 0.3.1 — reject comparison underflow
+
+- Reject nonzero comparison squares, positive means of nonnegative terms and
+  positive ratios that round to zero instead of accepting a false PASS.
+- Cover per-case, aggregate, update and sign-reversed paths; preserve genuine
+  zeros and supported subnormal results. CLI returns INVALID without a report.
+- Record format stays 0.2.0. Affected old reports no longer verify with the
+  corrected arithmetic; preserve original records and the historical verifier.
+- Seven regression tests cover the failure and valid boundary controls.
+- No new commands or dependencies; Python 3.9+ and existing attribution retained.
+
 ## 0.3.0 — init and bind commands
 
 - `init` writes fill-in protocol, predictions and references templates.
