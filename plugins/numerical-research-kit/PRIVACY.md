@@ -1,4 +1,4 @@
-# Privacy — Numerical Research Kit 0.3.0
+# Privacy — Numerical Research Kit 0.3.1
 
 This package is maintained by Adem Vessell. Its Python scripts process the
 numeric arrays, comparison metadata and file paths selected for the task.

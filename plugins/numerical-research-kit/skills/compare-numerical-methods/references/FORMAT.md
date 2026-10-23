@@ -63,6 +63,22 @@ baseline MSE of0 has null ratio; direct inequalities still reject a candidate
 with positive error when an accuracy gate is active. Two exact outputs satisfy
 any nonnegative error ratio threshold. Numeric range overflow is rejected.
 
+Version 0.3.1 also rejects a nonzero residual/update whose square rounds to
+zero, a positive mean of nonnegative terms that rounds to zero, or a positive
+ratio that rounds to zero. This includes per-case and aggregate MSE and
+sign-reversed diagnostics. These inputs raise `ValueError` in the API; the
+CLI returns INVALID (exit 2) without writing a report. They are unsupported
+numeric ranges, not measured method failures. Genuine zero errors remain valid.
+Rescale raw inputs and explicitly state the changed units when appropriate;
+retain any separate domain requirements. Other binary64 rounding and
+cancellation remain possible. This repair adds no arbitrary precision,
+statistical guarantees or ULP/bitwise acceptance rule.
+
+Record layout and version remain unchanged. Previously saved affected reports
+are no longer accepted by the repaired verifier; preserve the original bytes
+and verifier for historical inspection rather than silently rewriting them.
+Supported representable results retain their original arithmetic operations.
+
 For each case: `e = baseline-reference`, `d = candidate-baseline`.
 The reported identity is `MSEcandidate = MSEbaseline + 2 mean(e*d) + mean(d*d)`.
 The identity check uses relative tolerance1e-12 against the largest involved

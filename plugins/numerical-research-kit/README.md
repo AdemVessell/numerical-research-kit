@@ -4,7 +4,7 @@ A local skill and Python toolkit for comparing numerical approximations. It turn
 supplied baseline, candidate and reference values into checkable error measurements,
 declared-cost comparisons and saved reports.
 
-**Version 0.3.0 · Python 3.9+ · standard library only**
+**Version 0.3.1 · Python 3.9+ · standard library only**
 
 Use it to evaluate a solver change, inspect whether a correction is large enough
 to justify its cost, or preserve the inputs behind a reported result. It handles
@@ -93,7 +93,16 @@ Costs and reference correctness remain the caller's responsibility. Hashes
 establish content consistency, not trusted timestamps or reference isolation.
 The tool does not rerun predictors, measure memory/FLOPs/time, calculate
 uncertainty intervals, certify scientific results, or guarantee improvement.
-Arithmetic is binary64; very small values can underflow. Choose suitable units.
+Arithmetic is binary64 and rounded. Version 0.3.1 rejects nonzero comparison
+squares, positive means of nonnegative terms and positive ratios that round
+to zero, returning INVALID rather than treating them as exact agreement.
+Choose suitable units; this is not arbitrary-precision arithmetic or a complete
+underflow/cancellation detector.
+
+**Existing records:** the record format remains 0.2.0, but saved reports that
+depended on the corrected underflow behavior no longer verify. Preserve those
+original bytes and the original verifier for historical inspection; do not
+silently rewrite them. See the [format notes](skills/compare-numerical-methods/references/FORMAT.md).
 
 ## Development and support
 
